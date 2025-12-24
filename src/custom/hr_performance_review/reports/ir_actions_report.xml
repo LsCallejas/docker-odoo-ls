@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="action_report_performance" model="ir.actions.report">
+            <field name="name">Certificado de Evaluación</field>
+            <field name="model">hr.performance.review</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">hr_performance_review.report_performance_template</field>
+            <field name="report_file">hr_performance_review.report_performance_template</field>
+            
+            <field name="binding_model_id" ref="hr_performance_review.model_hr_performance_review"/>
+            
+            <field name="binding_type">report</field>
+        </record>
+    </data>
+</odoo>
