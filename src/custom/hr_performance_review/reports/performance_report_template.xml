@@ -1,38 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <record id="action_report_hr_performance" model="ir.actions.report">
+            <field name="name">Histórico de Desempeño</field>
+            <field name="model">hr.performance.review</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">hr_performance_review.report_performance_template</field>
+            <field name="report_file">hr_performance_review.report_performance_template</field>
+            <field name="print_report_name">'Evaluacion - %s' % (object.employee_id.name)</field>
+            <field name="binding_model_id" ref="model_hr_performance_review"/>
+            <field name="binding_type">report</field>
+        </record>
+
         <template id="report_performance_template">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
                     <t t-call="web.external_layout">
                         <div class="page">
-                            <div class="oe_structure"/>
-                            <h2 class="text-center">Certificado de Evaluación de Desempeño</h2>
-                            <br/>
-                            <div class="row">
+                            <h2>Histórico de Evaluaciones: <span t-field="o.employee_id.name"/></h2>
+                            
+                            <div class="row mt32 mb32">
                                 <div class="col-6">
-                                    <strong>Empleado:</strong> <span t-field="o.employee_id.name"/><br/>
-                                    <strong>Evaluador:</strong> <span t-field="o.reviewer_id.name"/>
+                                    <strong>Evaluador Actual:</strong> <span t-field="o.reviewer_id.name"/><br/>
+                                    <strong>Fecha:</strong> <span t-field="o.review_date"/>
                                 </div>
-                                <div class="col-6 text-end">
-                                    <strong>Fecha:</strong> <span t-field="o.review_date"/><br/>
-                                    <strong>Calificación:</strong> <span t-field="o.score"/> / 10.0
+                                <div class="col-6">
+                                    <strong>Calificación:</strong> <span t-field="o.score"/> / 10
                                 </div>
                             </div>
-                            <br/>
-                            <h4>Comentarios Generales</h4>
-                            <p t-field="o.comments"/>
-                            <hr/>
-                            <div class="row">
-                                <div class="col-6">
-                                    <strong>Fortalezas:</strong>
-                                    <p t-field="o.strengths"/>
-                                </div>
-                                <div class="col-6">
-                                    <strong>Debilidades:</strong>
-                                    <p t-field="o.weaknesses"/>
-                                </div>
-                            </div>
+
+                            <h4>Resumen del Historial</h4>
+                            <table class="table table-sm o_main_table">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Evaluador</th>
+                                        <th>Puntaje</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="history" t-value="request.env['hr.performance.review'].search([('employee_id', '=', o.employee_id.id)], order='review_date desc')"/>
+                                    <t t-foreach="history" t-as="line">
+                                        <tr>
+                                            <td><span t-field="line.review_date"/></td>
+                                            <td><span t-field="line.reviewer_id.name"/></td>
+                                            <td><span t-field="line.score"/></td>
+                                            <td><span t-field="line.state"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
                         </div>
                     </t>
                 </t>

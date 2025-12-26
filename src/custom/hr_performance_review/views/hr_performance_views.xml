@@ -7,9 +7,15 @@
             <field name="arch" type="xml">
                 <form>
                     <header>
-                        <button name="action_complete" string="Completar" type="object" class="oe_highlight" invisible="state == 'completed'"/>
-                        <field name="state" widget="statusbar"/>
+                        <button name="action_complete" 
+                                string="Marcar como Completada" 
+                                type="object" 
+                                class="oe_highlight" 
+                                invisible="state == 'completada'"/>
+                        
+                        <field name="state" widget="statusbar" statusbar_visible="pendiente,completada"/>
                     </header>
+                    
                     <sheet>
                         <group>
                             <group>
@@ -41,15 +47,19 @@
             <field name="name">hr.performance.review.kanban</field>
             <field name="model">hr.performance.review</field>
             <field name="arch" type="xml">
-                <kanban default_group_by="state">
+                <kanban default_group_by="state" quick_create="false">
                     <field name="state"/>
                     <templates>
                         <t t-name="kanban-box">
-                            <div class="oe_kanban_global_click o_kanban_record_has_image_fill">
+                            <div class="oe_kanban_global_click">
                                 <div class="oe_kanban_details">
-                                    <strong class="o_kanban_record_title"><field name="employee_id"/></strong>
-                                    <div>Calificación: <field name="score"/></div>
-                                    <div>Fecha: <field name="review_date"/></div>
+                                    <strong class="o_kanban_record_title">
+                                        <field name="employee_id"/>
+                                    </strong>
+                                    <div>Puntaje: <field name="score"/></div>
+                                    <div t-attf-class="badge #{record.state.raw_value == 'completada' ? 'bg-success' : 'bg-warning'}">
+                                        <field name="state"/>
+                                    </div>
                                 </div>
                             </div>
                         </t>
