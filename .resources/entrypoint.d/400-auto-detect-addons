@@ -26,11 +26,24 @@ repo_addons = []
 
 # Custom repositories, usually mounted for development
 if os.path.isdir(CUSTOM):
-    repo_addons += [
-        os.path.join(CUSTOM, d)
-        for d in sorted(os.listdir(CUSTOM))
-        if os.path.isdir(os.path.join(CUSTOM, d))
-    ]
+    custom_added = False
+    for d in sorted(os.listdir(CUSTOM)):
+        if d.startswith("."):
+            continue
+        subdir_path = os.path.join(CUSTOM, d)
+        if not os.path.isdir(subdir_path):
+            continue
+        
+        # Check if this is a direct Odoo module (has __manifest__.py)
+        manifest_path = os.path.join(subdir_path, "__manifest__.py")
+        if os.path.isfile(manifest_path):
+            # It's a module directly in custom/, add CUSTOM folder once
+            if not custom_added:
+                repo_addons.append(CUSTOM)
+                custom_added = True
+        else:
+            # It's a repository containing modules, add the repository
+            repo_addons.append(subdir_path)
 
     for d in sorted(os.listdir(CUSTOM)):
         module_path = os.path.join(CUSTOM, d)
