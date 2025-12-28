@@ -1,0 +1,41 @@
+<odoo>
+    <data>
+        <record id="product_template_form_view_inherit" model="ir.ui.view">
+            <field name="name">product.template.common.form.inherit</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='uom_id']" position="after">
+                    <field name="stock_minimo"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_critical_stock_search" model="ir.ui.view">
+            <field name="name">product.template.search.critical</field>
+            <field name="model">product.template</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <filter string="Stock Crítico" name="critical_stock" 
+                            domain="[('is_critical_stock', '=', True)]"/>
+                    <group expand="0" string="Agrupar Por">
+                        <filter string="Categoría" name="group_by_category" context="{'group_by': 'categ_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_critical_stock_board" model="ir.actions.act_window">
+            <field name="name">Tablero de Stock Crítico</field>
+            <field name="res_model">product.template</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_critical_stock_search"/>
+            <field name="context">{'search_default_critical_stock': 1, 'search_default_group_by_category': 1}</field>
+        </record>
+
+        <menuitem id="menu_stock_critical" name="Stock Crítico" 
+                parent="stock.menu_stock_inventory_control" 
+                action="action_critical_stock_board" sequence="100"/>
+    </data>              
+</odoo>

@@ -20,7 +20,6 @@ for d in sorted(os.listdir(SOURCES)):
     if os.path.isdir(full_path) and full_path != CUSTOM:
         addons.insert(0, full_path)
 
-
 # Project repositories
 repo_addons = []
 
