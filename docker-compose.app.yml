@@ -5,7 +5,8 @@ services:
     build:
       context: .
       dockerfile: ./.resources/Dockerfile
-    command: odoo --dev=all
+    #command: odoo --dev=all
+    command: odoo --dev=all --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/home/odoo/src/custom
     image: local_odoo:${ODOO_MINOR}
     volumes:
       - odoo-web:/var/lib/odoo
@@ -72,12 +73,14 @@ services:
     networks:
       binaural:
 
+
 volumes:
   odoo-web:
   odoo_data:
   py3:
   py:
   odoo-pgadmin:
+
 
 networks:
   binaural:
