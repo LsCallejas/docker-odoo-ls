@@ -1,4 +1,5 @@
 from odoo.tests.common import TransactionCase, tagged
+from odoo.exceptions import ValidationError
 
 
 @tagged('post_install', '-at_install')
@@ -71,3 +72,12 @@ class TestStockAlert(TransactionCase):
         self.env['product.template']._cron_check_critical_stock()
 
         self.assertFalse(self.product.alert_sent)
+
+    def test_stock_minimo_negative_validation(self):
+        """El stock mínimo no puede ser negativo."""
+        with self.assertRaises(ValidationError):
+            self.env['product.template'].create({
+                'name': 'Producto Negativo',
+                'detailed_type': 'product',
+                'stock_minimo': -5.0,
+            })

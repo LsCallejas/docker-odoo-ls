@@ -1,22 +1,109 @@
-# Módulo: Evaluación de Desempeño (Ejercicio 1)
+# Evaluaciones de Desempeño
 
-Este módulo ha sido desarrollado como parte de la prueba técnica de Binaural. Implementa un flujo completo para la gestión de evaluaciones de empleados en Odoo 17.
+![Odoo Version](https://img.shields.io/badge/Odoo-17.0-blue)
+![License](https://img.shields.io/badge/License-LGPL--3-green)
+![Tests](https://img.shields.io/badge/Tests-5%20passing-brightgreen)
 
-## 🚀 Funcionalidades Principales
-- **Gestión de Evaluaciones**: Modelo `hr.performance.review` con seguimiento de metas, fortalezas y debilidades.
-- **Flujo de Estados**: Kanban organizado por estados `Pendiente` y `Completada`.
-- **Seguridad y Validación**:
-  - **Filtro de RRHH**: Solo usuarios del grupo `Human Resources / Officer` o `Manager` pueden ser evaluadores.
-  - **Integridad**: Validación que impide que un empleado se evalúe a sí mismo (User ID validation).
-  - **Rango de Puntaje**: Restricción de 0 a 10 puntos.
-- **Reportes**: Generación de PDF con el historial de evaluaciones por empleado.
+## 📋 Descripción
 
-## 🛠️ Instalación en el Workspace
-1. Colocar la carpeta `hr_performance_review` en `src/custom/`.
-2. El entorno detectará automáticamente el módulo gracias a la configuración de `addons_path` en el workspace.
+Módulo de Odoo 17 para gestionar **evaluaciones periódicas de empleados**. Permite a Recursos Humanos realizar seguimiento del desempeño con puntajes, fortalezas, debilidades y objetivos.
 
-## 🧪 Pruebas Unitarias (Testing)
-Para validar la lógica de negocio y las restricciones de seguridad, ejecute el siguiente comando (adaptado al estándar de Binaural Workspace):
+---
 
+## ✨ Características
+
+| Característica | Descripción |
+|----------------|-------------|
+| Modelo completo | Campos para empleado, evaluador, puntaje, comentarios, fortalezas, debilidades y objetivos |
+| Vista Kanban | Organización por estados: Pendiente y Completada |
+| Validaciones | Puntaje 0-10, evaluador debe ser de RRHH, no auto-evaluación |
+| Reporte PDF | Historial de evaluaciones por empleado |
+| Seguimiento | Integración con chatter para tracking de cambios |
+
+---
+
+## 🛠️ Instalación
+
+### Requisitos
+- Odoo 17.0
+- Módulos `hr` y `mail` instalados
+
+### Pasos
+
+1. Copiar la carpeta `hr_performance_review` a `addons/`
+2. Actualizar lista de aplicaciones en Odoo
+3. Buscar "Evaluaciones" e instalar
+
+---
+
+## ⚙️ Uso
+
+### Crear una evaluación
+
+1. Ve a **Desempeño** (menú de aplicaciones)
+2. Clic en **Nuevo**
+3. Selecciona el empleado a evaluar
+4. Completa puntaje (0-10), fortalezas, debilidades
+5. Guarda
+
+### Vista Kanban
+
+- Las evaluaciones se organizan en columnas por estado
+- Usa el botón "Marcar como Completada" para cambiar estado
+
+### Generar reporte
+
+1. Abre una evaluación
+2. Clic en **Imprimir** → **Histórico de Desempeño**
+
+---
+
+## 🧪 Pruebas
+
+Ejecutar tests:
 ```bash
-docker exec -u odoo -it proj odoo -d binaural_db -i hr_performance_review --test-enable --without-demo=true --stop-after-init --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/home/odoo/src/custom --http-port 8072
+docker exec -u odoo proj odoo -d demo_limpia -u hr_performance_review --test-enable --stop-after-init --no-http
+```
+
+### Tests incluidos
+
+| Test | Descripción |
+|------|-------------|
+| test_performance_creation | Validar creación correcta de evaluaciones |
+| test_self_evaluation_denied | Empleado no puede evaluarse a sí mismo |
+| test_score_validation | Puntaje debe estar entre 0 y 10 |
+| test_reviewer_permission | Solo usuarios RRHH pueden evaluar |
+| test_full_flow | Flujo completo de estados |
+
+---
+
+## 📁 Estructura
+
+```
+hr_performance_review/
+├── __init__.py
+├── __manifest__.py
+├── models/
+│   ├── __init__.py
+│   └── hr_performance.py
+├── views/
+│   └── hr_performance_views.xml
+├── reports/
+│   ├── ir_actions_report.xml
+│   └── performance_report_template.xml
+├── security/
+│   └── ir.model.access.csv
+└── tests/
+    ├── __init__.py
+    └── test_performance.py
+```
+
+---
+
+## 📝 Autor
+
+**Leidy Callejas**
+
+## 📄 Licencia
+
+LGPL-3

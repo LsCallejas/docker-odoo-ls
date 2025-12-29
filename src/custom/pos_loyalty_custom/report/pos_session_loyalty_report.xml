@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- 
+            Sobrescribir el reporte de Detalles de Venta de Odoo
+            Versión compatible con wkhtmltopdf (sin flexbox ni gradientes)
+        -->
+        <template id="report_saledetails_inherit" inherit_id="point_of_sale.report_saledetails">
+            <xpath expr="//div[@class='page']" position="replace">
+                <div class="page" style="font-family: Arial, sans-serif; color: #333;">
+                    
+                    <!-- ================ HEADER ================ -->
+                    <table style="width: 100%; margin-bottom: 20px;">
+                        <tr>
+                            <td style="background-color: #714B67; 
+                                       color: white; 
+                                       padding: 20px; 
+                                       text-align: center;
+                                       border-radius: 8px;">
+                                <h1 style="margin: 0; font-size: 24px; color: white;">
+                                    Reporte de Ventas
+                                </h1>
+                                <t t-if="session_name">
+                                    <p style="margin: 8px 0 0 0; font-size: 14px; color: white;">
+                                        Sesión: <strong><t t-esc="session_name"/></strong>
+                                    </p>
+                                </t>
+                                <t t-if="date_start and date_stop">
+                                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #ddd;">
+                                        <t t-esc="date_start" t-options="{'widget': 'datetime'}"/> - 
+                                        <t t-esc="date_stop" t-options="{'widget': 'datetime'}"/>
+                                    </p>
+                                </t>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- ================ TARJETAS DE RESUMEN ================ -->
+                    <table style="width: 100%; margin-bottom: 20px; border-spacing: 10px;">
+                        <tr>
+                            <!-- Total Ventas -->
+                            <td style="width: 25%; 
+                                       background-color: #3498db; 
+                                       color: white; 
+                                       padding: 15px; 
+                                       text-align: center;
+                                       border-radius: 8px;">
+                                <p style="margin: 0; font-size: 11px; color: white;">TOTAL VENTAS</p>
+                                <p style="margin: 5px 0 0 0; font-size: 20px; font-weight: bold; color: white;">
+                                    <t t-if="currency['position']">
+                                        <t t-esc="products_info['total']" t-options="{'widget': 'float', 'precision': currency['precision']}"/><t t-esc="currency['symbol']"/>
+                                    </t>
+                                    <t t-else="">
+                                        <t t-esc="currency['symbol']"/><t t-esc="products_info['total']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                    </t>
+                                </p>
+                            </td>
+                            <!-- Total Productos -->
+                            <td style="width: 25%; 
+                                       background-color: #27ae60; 
+                                       color: white; 
+                                       padding: 15px; 
+                                       text-align: center;
+                                       border-radius: 8px;">
+                                <p style="margin: 0; font-size: 11px; color: white;">PRODUCTOS</p>
+                                <p style="margin: 5px 0 0 0; font-size: 20px; font-weight: bold; color: white;">
+                                    <t t-esc="products_info['qty']"/>
+                                </p>
+                            </td>
+                            <!-- Órdenes -->
+                            <td style="width: 25%; 
+                                       background-color: #9b59b6; 
+                                       color: white; 
+                                       padding: 15px; 
+                                       text-align: center;
+                                       border-radius: 8px;">
+                                <p style="margin: 0; font-size: 11px; color: white;">ÓRDENES</p>
+                                <p style="margin: 5px 0 0 0; font-size: 20px; font-weight: bold; color: white;">
+                                    <t t-if="total_orders"><t t-esc="total_orders"/></t>
+                                    <t t-elif="session_info"><t t-esc="session_info['transaction_count']"/></t>
+                                    <t t-else="">-</t>
+                                </p>
+                            </td>
+                            <!-- Puntos de Fidelización -->
+                            <td style="width: 25%; 
+                                       background-color: #f39c12; 
+                                       color: white; 
+                                       padding: 15px; 
+                                       text-align: center;
+                                       border-radius: 8px;">
+                                <p style="margin: 0; font-size: 11px; color: white;">PUNTOS FIDELIZACIÓN</p>
+                                <p style="margin: 5px 0 0 0; font-size: 20px; font-weight: bold; color: white;">
+                                    <t t-if="loyalty_points"><t t-esc="int(loyalty_points)"/></t>
+                                    <t t-else="">0</t>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- ================ VENTAS POR CATEGORÍA ================ -->
+                    <div t-if="products" style="margin-bottom: 20px;">
+                        <h3 style="color: #714B67; 
+                                   border-bottom: 2px solid #714B67; 
+                                   padding-bottom: 8px; 
+                                   margin-bottom: 10px;">
+                            Ventas por Categoría
+                        </h3>
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+                            <thead>
+                                <tr style="background-color: #714B67;">
+                                    <th style="padding: 10px; text-align: left; color: white; border: 1px solid #714B67;">Categoría</th>
+                                    <th style="padding: 10px; text-align: left; color: white; border: 1px solid #714B67;">Producto</th>
+                                    <th style="padding: 10px; text-align: right; color: white; border: 1px solid #714B67;">Cantidad</th>
+                                    <th style="padding: 10px; text-align: right; color: white; border: 1px solid #714B67;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="products" t-as="category">
+                                    <!-- Fila de categoría -->
+                                    <tr style="background-color: #f5f0f4;">
+                                        <td style="padding: 8px; font-weight: bold; color: #714B67; border: 1px solid #ddd;">
+                                            <t t-esc="category['name']"/>
+                                        </td>
+                                        <td style="padding: 8px; border: 1px solid #ddd;"></td>
+                                        <td style="padding: 8px; text-align: right; font-weight: bold; color: #333; border: 1px solid #ddd;">
+                                            <t t-esc="category['qty']"/>
+                                        </td>
+                                        <td style="padding: 8px; text-align: right; font-weight: bold; color: #333; border: 1px solid #ddd;">
+                                            <t t-if="currency['position']">
+                                                <t t-esc="category['total']" t-options="{'widget': 'float', 'precision': currency['precision']}"/><t t-esc="currency['symbol']"/>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-esc="currency['symbol']"/><t t-esc="category['total']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <!-- Productos de la categoría -->
+                                    <t t-foreach="category['products']" t-as="line">
+                                        <tr>
+                                            <td style="padding: 6px 8px; color: #333; border: 1px solid #ddd;"></td>
+                                            <td style="padding: 6px 8px; color: #333; border: 1px solid #ddd;">
+                                                <t t-if="line['code']">[<t t-esc="line['code']"/>] </t>
+                                                <t t-esc="line['product_name']"/>
+                                            </td>
+                                            <td style="padding: 6px 8px; text-align: right; color: #333; border: 1px solid #ddd;">
+                                                <t t-esc="line['quantity']"/>
+                                                <t t-if="line['uom'] != 'Units'">
+                                                    <span style="color: #888; font-size: 10px;"> <t t-esc="line['uom']"/></span>
+                                                </t>
+                                            </td>
+                                            <td style="padding: 6px 8px; text-align: right; color: #333; border: 1px solid #ddd;">
+                                                <t t-if="currency['position']">
+                                                    <t t-esc="line['base_amount']" t-options="{'widget': 'float', 'precision': currency['precision']}"/><t t-esc="currency['symbol']"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <t t-esc="currency['symbol']"/><t t-esc="line['base_amount']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                                </t>
+                                                <t t-if="line['discount'] != 0">
+                                                    <br/><span style="color: #e74c3c; font-size: 10px;">-<t t-esc="line['discount']"/>%</span>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+                                <!-- Fila de totales -->
+                                <tr style="background-color: #714B67;">
+                                    <td style="padding: 10px; color: white; font-weight: bold; border: 1px solid #714B67;">TOTAL</td>
+                                    <td style="padding: 10px; border: 1px solid #714B67;"></td>
+                                    <td style="padding: 10px; text-align: right; color: white; font-weight: bold; border: 1px solid #714B67;"><t t-esc="products_info['qty']"/></td>
+                                    <td style="padding: 10px; text-align: right; color: white; font-weight: bold; border: 1px solid #714B67;">
+                                        <t t-if="currency['position']">
+                                            <t t-esc="products_info['total']" t-options="{'widget': 'float', 'precision': currency['precision']}"/><t t-esc="currency['symbol']"/>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-esc="currency['symbol']"/><t t-esc="products_info['total']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- ================ IMPUESTOS ================ -->
+                    <div t-if="taxes" style="margin-bottom: 20px;">
+                        <h3 style="color: #714B67; 
+                                   border-bottom: 2px solid #714B67; 
+                                   padding-bottom: 8px; 
+                                   margin-bottom: 10px;">
+                            Impuestos
+                        </h3>
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+                            <thead>
+                                <tr style="background-color: #ecf0f1;">
+                                    <th style="padding: 8px; text-align: left; color: #333; border: 1px solid #ddd;">Nombre</th>
+                                    <th style="padding: 8px; text-align: right; color: #333; border: 1px solid #ddd;">Base Imponible</th>
+                                    <th style="padding: 8px; text-align: right; color: #333; border: 1px solid #ddd;">Importe</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="taxes" t-as="tax">
+                                    <tr>
+                                        <td style="padding: 8px; color: #333; border: 1px solid #ddd;"><t t-esc="tax['name']"/></td>
+                                        <td style="padding: 8px; text-align: right; color: #333; border: 1px solid #ddd;">
+                                            <t t-if="currency['position']">
+                                                <t t-esc="tax['base_amount']" t-options="{'widget': 'float', 'precision': currency['precision']}"/><t t-esc="currency['symbol']"/>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-esc="currency['symbol']"/><t t-esc="tax['base_amount']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                            </t>
+                                        </td>
+                                        <td style="padding: 8px; text-align: right; color: #333; border: 1px solid #ddd;">
+                                            <t t-if="currency['position']">
+                                                <t t-esc="tax['tax_amount']" t-options="{'widget': 'float', 'precision': currency['precision']}"/><t t-esc="currency['symbol']"/>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-esc="currency['symbol']"/><t t-esc="tax['tax_amount']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <tr style="background-color: #f8f9fa; font-weight: bold;">
+                                    <td style="padding: 8px; color: #333; border: 1px solid #ddd;">Total</td>
+                                    <td style="padding: 8px; text-align: right; color: #333; border: 1px solid #ddd;">
+                                        <t t-if="currency['position']">
+                                            <t t-esc="taxes_info['base_amount']" t-options="{'widget': 'float', 'precision': currency['precision']}"/><t t-esc="currency['symbol']"/>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-esc="currency['symbol']"/><t t-esc="taxes_info['base_amount']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                        </t>
+                                    </td>
+                                    <td style="padding: 8px; text-align: right; color: #333; border: 1px solid #ddd;">
+                                        <t t-if="currency['position']">
+                                            <t t-esc="taxes_info['tax_amount']" t-options="{'widget': 'float', 'precision': currency['precision']}"/><t t-esc="currency['symbol']"/>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-esc="currency['symbol']"/><t t-esc="taxes_info['tax_amount']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- ================ PAGOS ================ -->
+                    <div t-if="payments" style="margin-bottom: 20px;">
+                        <h3 style="color: #714B67; 
+                                   border-bottom: 2px solid #714B67; 
+                                   padding-bottom: 8px; 
+                                   margin-bottom: 10px;">
+                            Métodos de Pago
+                        </h3>
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+                            <thead>
+                                <tr style="background-color: #ecf0f1;">
+                                    <th style="padding: 8px; text-align: left; color: #333; border: 1px solid #ddd;">Método</th>
+                                    <th style="padding: 8px; text-align: right; color: #333; border: 1px solid #ddd;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="payments" t-as="payment">
+                                    <tr>
+                                        <td style="padding: 8px; color: #333; border: 1px solid #ddd;">
+                                            <t t-esc="payment['name']"/>
+                                        </td>
+                                        <td style="padding: 8px; text-align: right; font-weight: bold; color: #27ae60; border: 1px solid #ddd;">
+                                            <t t-if="currency['position']">
+                                                <t t-esc="payment['total']" t-options="{'widget': 'float', 'precision': currency['precision']}"/><t t-esc="currency['symbol']"/>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-esc="currency['symbol']"/><t t-esc="payment['total']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- ================ CONTROL DE SESIÓN ================ -->
+                    <div t-if="session_info" style="margin-bottom: 20px;">
+                        <h3 style="color: #714B67; 
+                                   border-bottom: 2px solid #714B67; 
+                                   padding-bottom: 8px; 
+                                   margin-bottom: 10px;">
+                            Control de Sesión
+                        </h3>
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+                            <tr>
+                                <td style="padding: 8px; width: 50%; color: #333; border: 1px solid #ddd;">Efectivo Inicial</td>
+                                <td style="padding: 8px; text-align: right; color: #333; border: 1px solid #ddd;">
+                                    <t t-if="currency['position']">
+                                        <t t-esc="session_info['opening']" t-options="{'widget': 'float', 'precision': currency['precision']}"/><t t-esc="currency['symbol']"/>
+                                    </t>
+                                    <t t-else="">
+                                        <t t-esc="currency['symbol']"/><t t-esc="session_info['opening']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; color: #333; border: 1px solid #ddd;">Número de Órdenes</td>
+                                <td style="padding: 8px; text-align: right; color: #333; border: 1px solid #ddd;"><t t-esc="session_info['transaction_count']"/></td>
+                            </tr>
+                            <tr style="background-color: #fff3cd;">
+                                <td style="padding: 8px; color: #856404; font-weight: bold; border: 1px solid #ddd;">Puntos de Fidelización Entregados</td>
+                                <td style="padding: 8px; text-align: right; color: #856404; font-weight: bold; border: 1px solid #ddd;">
+                                    <t t-if="loyalty_points"><t t-esc="int(loyalty_points)"/></t>
+                                    <t t-else="">0</t>
+                                    pts
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- ================ FOOTER ================ -->
+                    <div style="margin-top: 25px; 
+                                padding-top: 10px; 
+                                border-top: 2px solid #714B67; 
+                                text-align: center;">
+                        <p style="margin: 0; color: #666; font-size: 11px;">
+                            Reporte generado por <strong><t t-esc="company.name"/></strong>
+                        </p>
+                        <p style="margin: 3px 0 0 0; color: #999; font-size: 10px;">
+                            Sistema de Punto de Venta con Programa de Fidelización
+                        </p>
+                    </div>
+
+                </div>
+            </xpath>
+        </template>
+
+    </data>
+</odoo>

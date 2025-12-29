@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- 
+            CRITERIO 2: Vista de configuración en pos.config
+            Agrega campos para configurar el programa de fidelización
+        -->
+        <record id="pos_config_view_form_loyalty" model="ir.ui.view">
+            <field name="name">pos.config.form.loyalty</field>
+            <field name="model">pos.config</field>
+            <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet" position="inside">
+                    <group string="Programa de Fidelización">
+                        <field name="enable_loyalty"/>
+                        <field name="loyalty_step_amount" invisible="not enable_loyalty"/>
+                        <field name="loyalty_points_qty" invisible="not enable_loyalty"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- 
+            CRITERIO 4: Vista resumen en pos.session
+            Muestra el total de puntos entregados en la sesión
+        -->
+        <record id="view_pos_session_form_loyalty" model="ir.ui.view">
+            <field name="name">pos.session.form.loyalty</field>
+            <field name="model">pos.session</field>
+            <field name="inherit_id" ref="point_of_sale.view_pos_session_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='total_payments_amount']" position="after">
+                    <field name="total_loyalty_points"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- 
+            CRITERIO 5 (Parte 1): Vista de órdenes con puntos
+            Agrega columna de puntos ganados en la lista de órdenes
+        -->
+        <record id="view_pos_order_tree_loyalty" model="ir.ui.view">
+            <field name="name">pos.order.tree.loyalty</field>
+            <field name="model">pos.order</field>
+            <field name="inherit_id" ref="point_of_sale.view_pos_order_tree"/>
+            <field name="arch" type="xml">
+                <field name="amount_total" position="after">
+                    <field name="points_won" sum="Total Puntos"/>
+                </field>
+            </field>
+        </record>
+
+        <!-- 
+            Vista de formulario de orden con puntos
+        -->
+        <record id="view_pos_order_form_loyalty" model="ir.ui.view">
+            <field name="name">pos.order.form.loyalty</field>
+            <field name="model">pos.order</field>
+            <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+            <field name="arch" type="xml">
+                <field name="amount_total" position="after">
+                    <field name="points_won"/>
+                </field>
+            </field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- 
+            CRITERIO 1: Campo de puntos acumulados visible en el cliente
+            Agrega el campo loyalty_points al formulario de contactos
+        -->
+        <record id="view_partner_form_loyalty" model="ir.ui.view">
+            <field name="name">res.partner.form.loyalty</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='sales_purchases']" position="inside">
+                    <group string="Programa de Fidelización">
+                        <field name="loyalty_points" readonly="1"/>
+                        <button name="action_view_loyalty_history" 
+                                type="object" 
+                                string="Ver Historial de Puntos"
+                                class="btn-link"
+                                icon="fa-history"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- 
+            CRITERIO 5: Acción para ver historial de puntos del cliente
+            Muestra las órdenes del cliente con los puntos ganados
+        -->
+        <record id="action_loyalty_history" model="ir.actions.act_window">
+            <field name="name">Historial de Puntos</field>
+            <field name="res_model">pos.order</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('partner_id', '=', active_id), ('points_won', '>', 0)]</field>
+            <field name="context">{'search_default_partner_id': active_id}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Este cliente aún no tiene historial de puntos.
+                </p>
+            </field>
+        </record>
+
+        <!-- 
+            Vista tree específica para el historial de puntos
+        -->
+        <record id="view_loyalty_history_tree" model="ir.ui.view">
+            <field name="name">pos.order.loyalty.history.tree</field>
+            <field name="model">pos.order</field>
+            <field name="arch" type="xml">
+                <tree string="Historial de Puntos">
+                    <field name="date_order" string="Fecha"/>
+                    <field name="name" string="Orden"/>
+                    <field name="amount_total" string="Monto Total" sum="Total"/>
+                    <field name="points_won" string="Puntos Ganados" sum="Total Puntos"/>
+                </tree>
+            </field>
+        </record>
+
+    </data>
+</odoo>
